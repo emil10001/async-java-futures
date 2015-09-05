@@ -8,9 +8,9 @@ import java.util.Observer;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class ObserverExample {
-    private static ReentrantLock lock = new ReentrantLock();
+    protected static ReentrantLock lock = new ReentrantLock();
 
-    private static class ContentObserver implements Observer {
+    protected static class ContentObserver implements Observer {
 
         @Override
         public void update(Observable o, Object arg) {
@@ -22,7 +22,7 @@ public class ObserverExample {
         }
     }
 
-    private static class ObservableContent extends Observable {
+    protected static class ObservableContent extends Observable {
         private Content content = null;
 
         public ObservableContent() {

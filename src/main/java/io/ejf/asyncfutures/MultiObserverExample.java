@@ -10,13 +10,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class MultiObserverExample {
-    private static ReentrantLock lock = new ReentrantLock();
+    protected static ReentrantLock lock = new ReentrantLock();
     private static final ConcurrentLinkedQueue<String> resultsQueue = new ConcurrentLinkedQueue<>();
 
-    private static class ContentObserver implements Observer {
+    protected static class ContentObserver implements Observer {
         private final AtomicInteger expectedResults;
 
-        private ContentObserver(int expectedResults) {
+        protected ContentObserver(int expectedResults) {
             this.expectedResults = new AtomicInteger(expectedResults);
         }
 
@@ -42,7 +42,7 @@ public class MultiObserverExample {
         lock.unlock();
     }
 
-    private static class ObservableContent extends Observable {
+    protected static class ObservableContent extends Observable {
         private Content content = null;
 
         public ObservableContent() {

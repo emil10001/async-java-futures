@@ -6,7 +6,7 @@ import org.apache.http.impl.bootstrap.HttpServer;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class WrapperExample {
-    private static ReentrantLock lock = new ReentrantLock();
+    protected static ReentrantLock lock = new ReentrantLock();
 
     private static class WrapperClass {
         static final WrapperClass INSTANCE = new WrapperClass();
