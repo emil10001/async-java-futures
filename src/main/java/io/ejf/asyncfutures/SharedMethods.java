@@ -22,6 +22,18 @@ public class SharedMethods {
             response.setEntity(new StringEntity("OK", "ASCII"));
             response.setStatusCode(HttpStatus.SC_OK);
         };
+        HttpRequestHandler requestHandler1 = (request, response, context) -> {
+            response.setEntity(new StringEntity("OK - 1", "ASCII"));
+            response.setStatusCode(HttpStatus.SC_OK);
+        };
+        HttpRequestHandler requestHandler2 = (request, response, context) -> {
+            response.setEntity(new StringEntity("OK - 2", "ASCII"));
+            response.setStatusCode(HttpStatus.SC_OK);
+        };
+        HttpRequestHandler requestHandler3 = (request, response, context) -> {
+            response.setEntity(new StringEntity("OK - 3", "ASCII"));
+            response.setStatusCode(HttpStatus.SC_OK);
+        };
         HttpProcessor httpProcessor=new ImmutableHttpProcessor(new ResponseDate(),new ResponseServer(),new ResponseContent(),new ResponseConnControl());
 
         SocketConfig socketConfig = SocketConfig.custom()
@@ -33,6 +45,9 @@ public class SharedMethods {
                 .setHttpProcessor(httpProcessor)
                 .setSocketConfig(socketConfig)
                 .registerHandler("*", requestHandler)
+                .registerHandler("/1", requestHandler1)
+                .registerHandler("/2", requestHandler2)
+                .registerHandler("/3", requestHandler3)
                 .create();
 
         serverService.submit(() -> {
@@ -47,7 +62,6 @@ public class SharedMethods {
             try {
                 server.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
             } catch (InterruptedException e) {
-                e.printStackTrace();
             }
 
             log("server running");
@@ -64,14 +78,58 @@ public class SharedMethods {
         return server;
     }
 
-    public static Content request() throws IOException {
+    public static Content request() {
         log("request");
-        return Request.Get("http://127.0.0.1:8080")
-                .execute().returnContent();
+        try {
+            return Request.Get("http://127.0.0.1:8080")
+                    .execute().returnContent();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
+
+    public static Content request(String s) {
+        log("request");
+        try {
+            return Request.Get("http://127.0.0.1:8080/" + s)
+                    .execute().returnContent();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 
     public static void log(String statement) {
         System.out.println(Thread.currentThread().getName() + ": " + statement);
     }
 
+    public static void teardown(HttpServer server) {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        server.shutdown(0L, TimeUnit.MILLISECONDS);
+
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        serverService.shutdownNow();
+        requestService.shutdownNow();
+
+        while (!serverService.isShutdown()
+                || !requestService.isShutdown()) {
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

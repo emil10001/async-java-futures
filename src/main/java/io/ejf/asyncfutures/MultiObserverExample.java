@@ -5,21 +5,41 @@ import org.apache.http.impl.bootstrap.HttpServer;
 
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ObserverExample {
+public class MultiObserverExample {
     private static ReentrantLock lock = new ReentrantLock();
+    private static final ConcurrentLinkedQueue<String> resultsQueue = new ConcurrentLinkedQueue<>();
 
     private static class ContentObserver implements Observer {
+        private final AtomicInteger expectedResults;
+
+        private ContentObserver(int expectedResults) {
+            this.expectedResults = new AtomicInteger(expectedResults);
+        }
 
         @Override
         public void update(Observable o, Object arg) {
             if (!(o instanceof ObservableContent))
                 return;
 
-            SharedMethods.log("update result" + ((ObservableContent) o).getContent().asString());
-            lock.unlock();
+            resultsQueue.add(String.valueOf(expectedResults.get()) + " "
+                    + ((ObservableContent) o).getContent().asString());
+
+            if (0 == this.expectedResults.decrementAndGet())
+                finished();
         }
+
+    }
+
+    private static void finished() {
+        SharedMethods.log("finished");
+        for (String result : resultsQueue)
+            SharedMethods.log("update result: " + result);
+
+        lock.unlock();
     }
 
     private static class ObservableContent extends Observable {
@@ -56,8 +76,10 @@ public class ObserverExample {
         SharedMethods.log("main");
         HttpServer server = SharedMethods.server();
         ObservableContent content = new ObservableContent();
-        content.addObserver(new ContentObserver());
-        ObserverExample.doObserverRequest(content);
+        content.addObserver(new ContentObserver(3));
+        MultiObserverExample.doObserverRequest(content);
+        MultiObserverExample.doObserverRequest(content);
+        MultiObserverExample.doObserverRequest(content);
 
         long startTime = System.currentTimeMillis();
         lock.lock();
