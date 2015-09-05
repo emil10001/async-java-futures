@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class ObserverExample {
     protected static ReentrantLock lock = new ReentrantLock();
+    static final SharedMethods.Log log_ = new SharedMethods.Log(ObserverExample.class);
 
     protected static class ContentObserver implements Observer {
 
@@ -17,7 +18,7 @@ public class ObserverExample {
             if (!(o instanceof ObservableContent))
                 return;
 
-            SharedMethods.log("update result" + ((ObservableContent) o).getContent().asString());
+            log_.log("update result" + ((ObservableContent) o).getContent().asString());
             lock.unlock();
         }
     }
@@ -41,7 +42,7 @@ public class ObserverExample {
     }
 
     public static void doObserverRequest(ObservableContent content) {
-        SharedMethods.log("doCallbackRequest");
+        log_.log("doCallbackRequest");
 
         long startTime = System.currentTimeMillis();
         SharedMethods.requestService.submit(() -> {
@@ -49,11 +50,11 @@ public class ObserverExample {
         });
 
         long blockedTime = (System.currentTimeMillis() - startTime);
-        SharedMethods.log("blockedTime: " + blockedTime + "ms");
+        log_.log("blockedTime: " + blockedTime + "ms");
     }
 
     public static void main(String[] args) {
-        SharedMethods.log("main");
+        log_.log("main");
         HttpServer server = SharedMethods.server();
         ObservableContent content = new ObservableContent();
         content.addObserver(new ContentObserver());
@@ -62,11 +63,11 @@ public class ObserverExample {
         long startTime = System.currentTimeMillis();
         lock.lock();
         long blockedTime = (System.currentTimeMillis() - startTime);
-        SharedMethods.log("blockedTime for lock: " + blockedTime + "ms");
+        log_.log("blockedTime for lock: " + blockedTime + "ms");
 
         SharedMethods.teardown(server);
 
-        SharedMethods.log("finish");
+        log_.log("finish");
     }
 
 }

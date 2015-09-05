@@ -6,13 +6,14 @@ import rx.Observable;
 import rx.schedulers.Schedulers;
 
 public class RxJavaExample {
+    static final SharedMethods.Log log_ = new SharedMethods.Log(RxJavaExample.class);
 
     public static void handleResponse(Content c) {
-        SharedMethods.log("update result: " + c.asString());
+        log_.log("update result: " + c.asString());
     }
 
     public static void main(String[] args) {
-        SharedMethods.log("main");
+        log_.log("main");
         HttpServer server = SharedMethods.server();
 
         long startTime = System.currentTimeMillis();
@@ -24,11 +25,11 @@ public class RxJavaExample {
                 .subscribe(c -> handleResponse(c));
 
         long blockedTime = (System.currentTimeMillis() - startTime);
-        SharedMethods.log("blockedTime for lock: " + blockedTime + "ms");
+        log_.log("blockedTime for lock: " + blockedTime + "ms");
 
         SharedMethods.teardown(server);
 
-        SharedMethods.log("finish");
+        log_.log("finish");
     }
 
 }

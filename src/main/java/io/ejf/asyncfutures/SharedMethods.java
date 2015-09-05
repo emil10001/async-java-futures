@@ -15,9 +15,10 @@ import java.util.concurrent.*;
 public class SharedMethods {
     public static ExecutorService serverService = Executors.newSingleThreadExecutor();
     public static ExecutorService requestService = Executors.newSingleThreadExecutor();
+    static final SharedMethods.Log log_ = new SharedMethods.Log(SharedMethods.class);
 
     public static HttpServer server() {
-        log("server");
+        log_.log("server");
         HttpRequestHandler requestHandler = (request, response, context) -> {
             response.setEntity(new StringEntity("OK", "ASCII"));
             response.setStatusCode(HttpStatus.SC_OK);
@@ -51,7 +52,7 @@ public class SharedMethods {
                 .create();
 
         serverService.submit(() -> {
-            log("server start");
+            log_.log("server start");
             try {
                 server.start();
             } catch (IOException e) {
@@ -64,12 +65,12 @@ public class SharedMethods {
             } catch (InterruptedException e) {
             }
 
-            log("server running");
+            log_.log("server running");
 
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {
-                    log("shutting down server");
+                    log_.log("shutting down server");
                     server.shutdown(0L, TimeUnit.MILLISECONDS);
                 }
             });
@@ -79,7 +80,7 @@ public class SharedMethods {
     }
 
     public static Content request() {
-        log("request");
+        log_.log("request");
         try {
             return Request.Get("http://127.0.0.1:8080")
                     .execute().returnContent();
@@ -90,7 +91,7 @@ public class SharedMethods {
     }
 
     public static Content request(String s) {
-        log("request");
+        log_.log("request");
         try {
             return Request.Get("http://127.0.0.1:8080/" + s)
                     .execute().returnContent();
@@ -100,9 +101,16 @@ public class SharedMethods {
         return null;
     }
 
+    public static class Log {
+        final Class clazz;
 
-    public static void log(String statement) {
-        System.out.println(Thread.currentThread().getName() + ": " + statement);
+        public Log(Class clazz) {
+            this.clazz = clazz;
+        }
+
+        public void log(String statement) {
+            System.out.println("{" + Thread.currentThread().getName() + "} " + clazz.getSimpleName() + ": " + statement);
+        }
     }
 
     public static void teardown(HttpServer server) {

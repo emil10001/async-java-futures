@@ -6,9 +6,10 @@ import org.apache.http.impl.bootstrap.HttpServer;
 import java.util.concurrent.Future;
 
 public class MultiBlockingExample {
+    static final SharedMethods.Log log_ = new SharedMethods.Log(MultiBlockingExample.class);
 
     public static String doBlockingRequest(String appended) {
-        SharedMethods.log("doBlockingRequest");
+        log_.log("doBlockingRequest");
 
         long startTime = System.currentTimeMillis();
         Future<Content> futureA = SharedMethods.requestService.submit(() -> SharedMethods.request());
@@ -23,22 +24,22 @@ public class MultiBlockingExample {
         }
 
         long blockedTime = (System.currentTimeMillis() - startTime);
-        SharedMethods.log("blockedTime: " + blockedTime + "ms");
+        log_.log("blockedTime: " + blockedTime + "ms");
 
         return result;
     }
 
     public static void main(String[] args) {
-        SharedMethods.log("main");
+        log_.log("main");
         HttpServer server = SharedMethods.server();
         String result = MultiBlockingExample.doBlockingRequest("0");
-        SharedMethods.log("request content: " + result);
+        log_.log("request content: " + result);
 
         result = MultiBlockingExample.doBlockingRequest(result);
-        SharedMethods.log("request content: " + result);
+        log_.log("request content: " + result);
 
         SharedMethods.teardown(server);
 
-        SharedMethods.log("finish");
+        log_.log("finish");
     }
 }
